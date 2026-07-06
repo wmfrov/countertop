@@ -63,11 +63,11 @@ function Counter({ id, defaultLabel }: { id: string; defaultLabel: string }) {
         />
       </div>
 
-      <div className="flex-1 flex items-center justify-center pointer-events-none overflow-hidden p-2">
+      <div className="mt-auto h-[20dvh] flex items-center justify-center pointer-events-none overflow-hidden">
         <span
           className="font-bold text-foreground tracking-tighter leading-none transition-transform"
           style={{
-            fontSize: 'min(48dvh, 32dvw)',
+            fontSize: 'min(18dvh, 32dvw)',
             transform: isAnimating ? 'scale(0.92)' : 'scale(1)',
           }}
         >
