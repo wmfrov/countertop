@@ -1,28 +1,23 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useLayoutEffect,
-} from 'react';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
-import { RotateCcw, Minus, Plus, Settings, Trash2 } from 'lucide-react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import { Route, Switch, Router as WouterRouter } from "wouter";
+import { RotateCcw, Minus, Plus, Settings, Trash2 } from "lucide-react";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-} from '@/components/ui/sheet';
+} from "@/components/ui/sheet";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@/components/ui/select';
-import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 /* ------------------------------------------------------------------ */
 /* Config model + persistence                                          */
@@ -41,35 +36,39 @@ type BoardConfig = {
 };
 
 const FONTS = [
-  { key: 'Roboto', label: 'Roboto', stack: "'Roboto', sans-serif" },
-  { key: 'Inter', label: 'Inter', stack: "'Inter', sans-serif" },
-  { key: 'Oswald', label: 'Oswald (Condensed)', stack: "'Oswald', sans-serif" },
-  { key: 'Bebas Neue', label: 'Bebas Neue', stack: "'Bebas Neue', sans-serif" },
-  { key: 'Poppins', label: 'Poppins (Rounded)', stack: "'Poppins', sans-serif" },
-  { key: 'Rubik', label: 'Rubik', stack: "'Rubik', sans-serif" },
-  { key: 'Space Mono', label: 'Space Mono', stack: "'Space Mono', monospace" },
+  { key: "Roboto", label: "Roboto", stack: "'Roboto', sans-serif" },
+  { key: "Inter", label: "Inter", stack: "'Inter', sans-serif" },
+  { key: "Oswald", label: "Oswald (Condensed)", stack: "'Oswald', sans-serif" },
+  { key: "Bebas Neue", label: "Bebas Neue", stack: "'Bebas Neue', sans-serif" },
   {
-    key: 'Archivo Black',
-    label: 'Archivo Black',
+    key: "Poppins",
+    label: "Poppins (Rounded)",
+    stack: "'Poppins', sans-serif",
+  },
+  { key: "Rubik", label: "Rubik", stack: "'Rubik', sans-serif" },
+  { key: "Space Mono", label: "Space Mono", stack: "'Space Mono', monospace" },
+  {
+    key: "Archivo Black",
+    label: "Archivo Black",
     stack: "'Archivo Black', sans-serif",
   },
 ] as const;
 
 const COLOR_PRESETS = [
-  '#fafafa',
-  '#f97316',
-  '#22c55e',
-  '#3b82f6',
-  '#eab308',
-  '#ec4899',
-  '#a855f7',
-  '#ef4444',
+  "#fafafa",
+  "#f97316",
+  "#22c55e",
+  "#3b82f6",
+  "#eab308",
+  "#ec4899",
+  "#a855f7",
+  "#ef4444",
 ];
 
-const DEFAULT_FONT = 'Roboto';
-const DEFAULT_COLOR = '#fafafa';
+const DEFAULT_FONT = "Roboto";
+const DEFAULT_COLOR = "#fafafa";
 const DEFAULT_NUMBER_HEIGHT = 25;
-const CONFIG_KEY = 'tally-board-config-v1';
+const CONFIG_KEY = "tally-board-config-v1";
 
 function fontStackFor(key: string): string {
   return FONTS.find((f) => f.key === key)?.stack ?? FONTS[0].stack;
@@ -88,7 +87,7 @@ function readLegacyLabel(id: string, fallback: string): string {
     const v = window.localStorage.getItem(`tally-label-${id}`);
     if (v === null) return fallback;
     const parsed = JSON.parse(v);
-    return typeof parsed === 'string' ? parsed : fallback;
+    return typeof parsed === "string" ? parsed : fallback;
   } catch {
     return fallback;
   }
@@ -102,13 +101,13 @@ function loadConfig(): BoardConfig {
       if (parsed && Array.isArray(parsed.counters)) {
         const counters: CounterConfig[] = parsed.counters
           .filter((c: unknown): c is Record<string, unknown> =>
-            Boolean(c && typeof c === 'object'),
+            Boolean(c && typeof c === "object"),
           )
           .map((c: Record<string, unknown>) => ({
-            id: typeof c.id === 'string' ? c.id : newId(),
-            label: typeof c.label === 'string' ? c.label : '',
-            color: typeof c.color === 'string' ? c.color : DEFAULT_COLOR,
-            font: typeof c.font === 'string' ? c.font : DEFAULT_FONT,
+            id: typeof c.id === "string" ? c.id : newId(),
+            label: typeof c.label === "string" ? c.label : "",
+            color: typeof c.color === "string" ? c.color : DEFAULT_COLOR,
+            font: typeof c.font === "string" ? c.font : DEFAULT_FONT,
           }));
         if (counters.length > 0) {
           const nh = Number(parsed.numberHeight);
@@ -130,14 +129,14 @@ function loadConfig(): BoardConfig {
   return {
     counters: [
       {
-        id: '1',
-        label: readLegacyLabel('1', 'LEFT'),
+        id: "1",
+        label: readLegacyLabel("1", "LEFT"),
         color: DEFAULT_COLOR,
         font: DEFAULT_FONT,
       },
       {
-        id: '2',
-        label: readLegacyLabel('2', 'RIGHT'),
+        id: "2",
+        label: readLegacyLabel("2", "RIGHT"),
         color: DEFAULT_COLOR,
         font: DEFAULT_FONT,
       },
@@ -159,7 +158,9 @@ function useStickyState<T>(
       const stickyValue = window.localStorage.getItem(key);
       if (stickyValue === null) return defaultValue;
       const parsed = JSON.parse(stickyValue);
-      return typeof parsed === typeof defaultValue ? (parsed as T) : defaultValue;
+      return typeof parsed === typeof defaultValue
+        ? (parsed as T)
+        : defaultValue;
     } catch {
       return defaultValue;
     }
@@ -244,10 +245,10 @@ function Counter({
           style={{
             color: config.color,
             opacity: 0.85,
-            fontSize: 'min(0.8rem, 3.5vw)',
+            fontSize: "min(0.8rem, 3.5vw)",
           }}
         >
-          {config.label || '\u00A0'}
+          {config.label || "\u00A0"}
         </div>
       </div>
 
@@ -260,7 +261,7 @@ function Counter({
           style={{
             color: config.color,
             fontSize: `${fontSize}px`,
-            transform: isAnimating ? 'scale(0.92)' : 'scale(1)',
+            transform: isAnimating ? "scale(0.92)" : "scale(1)",
           }}
         >
           {count}
@@ -375,7 +376,7 @@ function SettingsPanel({
             <Slider
               value={[config.numberHeight]}
               min={15}
-              max={60}
+              max={100}
               step={1}
               onValueChange={([v]) =>
                 setConfig((prev) => ({ ...prev, numberHeight: v }))
@@ -548,7 +549,7 @@ function Home() {
 
 function App() {
   return (
-    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+    <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
       <Switch>
         <Route path="/" component={Home} />
         <Route
