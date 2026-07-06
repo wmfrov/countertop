@@ -1,0 +1,12 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1024" height="1024" rx="205" fill="#FF3C00"/>
+  <g stroke="#FFFFFF" stroke-width="54" stroke-linecap="round">
+    <!-- four vertical tally strokes -->
+    <line x1="330" y1="360" x2="330" y2="664"/>
+    <line x1="428" y1="360" x2="428" y2="664"/>
+    <line x1="526" y1="360" x2="526" y2="664"/>
+    <line x1="624" y1="360" x2="624" y2="664"/>
+    <!-- diagonal slash crossing them (the fifth mark) -->
+    <line x1="296" y1="680" x2="726" y2="344"/>
+  </g>
+</svg>
