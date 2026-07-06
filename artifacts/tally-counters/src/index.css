@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap');
 
 @import 'tailwindcss';
 
@@ -10,8 +10,8 @@
   --color-muted-foreground: hsl(var(--muted-foreground));
   --color-accent: hsl(var(--accent));
 
-  --font-mono: 'IBM Plex Mono', monospace;
-  --font-sans: 'IBM Plex Mono', monospace;
+  --font-mono: 'Roboto', sans-serif;
+  --font-sans: 'Roboto', sans-serif;
 }
 
 :root {
