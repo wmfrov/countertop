@@ -552,6 +552,9 @@ function App() {
     <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
       <Switch>
         <Route path="/" component={Home} />
+        {/* Packaged desktop builds (e.g. Pake/Tauri) load the app at
+            /index.html, so match it explicitly to render the board. */}
+        <Route path="/index.html" component={Home} />
         <Route
           component={() => <div className="p-4 text-white">Not Found</div>}
         />
