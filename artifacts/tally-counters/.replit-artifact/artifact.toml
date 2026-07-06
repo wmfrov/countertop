@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Tally Counters"
+version = "1.0.0"
+id = "artifacts/tally-counters"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19348
+
+[services.development]
+run = "pnpm --filter @workspace/tally-counters run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/tally-counters", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/tally-counters/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19348"
+BASE_PATH = "/"
