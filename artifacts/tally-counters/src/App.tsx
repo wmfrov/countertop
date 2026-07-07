@@ -198,9 +198,11 @@ function useElementSize<T extends HTMLElement>() {
 function Counter({
   config,
   numberHeight,
+  reserveCog = false,
 }: {
   config: CounterConfig;
   numberHeight: number;
+  reserveCog?: boolean;
 }) {
   const [count, setCount] = useStickyState(0, `tally-count-${config.id}`);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -224,10 +226,84 @@ function Counter({
     setCount(0);
   };
 
-  // Scale the number to fill the chosen band height, capped so it never
-  // overflows the column width (accounting for how many digits are shown).
-  const bandHeightPx = cellSize.height * (numberHeight / 100);
   const digits = Math.max(1, String(count).length);
+
+  // When the cell is too short to stack label + number + controls without
+  // overlap, reflow into a single horizontal row instead. Threshold is in px
+  // so it tracks the actual window/cell size (e.g. the small Pake desktop
+  // window), not the viewport.
+  const isCompact = cellSize.height > 0 && cellSize.height < 160;
+
+  const controls = (
+    <div className="flex gap-1 opacity-60 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+      <button
+        onClick={handleDecrement}
+        className="p-1.5 md:p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+        title="Decrement"
+      >
+        <Minus size={16} strokeWidth={2.5} />
+      </button>
+      <button
+        onClick={handleReset}
+        className="p-1.5 md:p-2 text-muted-foreground hover:text-accent hover:bg-muted rounded transition-colors"
+        title="Reset"
+      >
+        <RotateCcw size={16} strokeWidth={2.5} />
+      </button>
+    </div>
+  );
+
+  if (isCompact) {
+    // Fit the number to the row height, capped by the room left beside the
+    // label and controls so it never overflows or collides.
+    const fontSize = Math.max(
+      8,
+      Math.min(cellSize.height * 0.62, (cellSize.width * 0.5) / (digits * 0.6)),
+    );
+
+    return (
+      <div
+        ref={cellRef}
+        className="flex h-full min-w-0 items-center gap-2 px-3 border-r border-b border-border relative group cursor-pointer overflow-hidden transition-colors hover:bg-white/[0.02] active:bg-white/[0.05]"
+        onClick={handleIncrement}
+        style={{ fontFamily: fontStackFor(config.font) }}
+      >
+        <div
+          className="tracking-[0.15em] font-bold uppercase truncate shrink min-w-0 max-w-[42%]"
+          style={{
+            color: config.color,
+            opacity: 0.85,
+            fontSize: "min(0.7rem, 3vw)",
+          }}
+        >
+          {config.label || "\u00A0"}
+        </div>
+
+        <div className="flex-1 flex items-center justify-center pointer-events-none overflow-hidden min-w-0">
+          <span
+            className="font-bold tracking-tighter leading-none transition-transform"
+            style={{
+              color: config.color,
+              fontSize: `${fontSize}px`,
+              transform: isAnimating ? "scale(0.92)" : "scale(1)",
+            }}
+          >
+            {count}
+          </span>
+        </div>
+
+        {/* Reserve room for the settings cog on the top-right cell so the
+            inline controls never sit under it. */}
+        <div className={`shrink-0 z-10 ${reserveCog ? "mr-9" : ""}`}>
+          {controls}
+        </div>
+      </div>
+    );
+  }
+
+  // Tall (stacked) layout: scale the number to fill the chosen band height,
+  // capped so it never overflows the column width.
+  const bandHeightPx = cellSize.height * (numberHeight / 100);
   const maxByHeight = bandHeightPx * 1.05;
   const maxByWidth = (cellSize.width * 0.9) / (digits * 0.6);
   const fontSize = Math.max(8, Math.min(maxByHeight, maxByWidth));
@@ -239,7 +315,7 @@ function Counter({
       onClick={handleIncrement}
       style={{ fontFamily: fontStackFor(config.font) }}
     >
-      <div className="absolute top-0 left-0 w-full p-2 z-10">
+      <div className={`absolute top-0 left-0 w-full p-2 z-10 ${reserveCog ? "pr-11" : ""}`}>
         <div
           className="tracking-[0.2em] font-bold uppercase truncate"
           style={{
@@ -268,22 +344,7 @@ function Counter({
         </span>
       </div>
 
-      <div className="absolute bottom-2 right-2 flex gap-1 z-10 opacity-60 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-        <button
-          onClick={handleDecrement}
-          className="p-1.5 md:p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
-          title="Decrement"
-        >
-          <Minus size={16} strokeWidth={2.5} />
-        </button>
-        <button
-          onClick={handleReset}
-          className="p-1.5 md:p-2 text-muted-foreground hover:text-accent hover:bg-muted rounded transition-colors"
-          title="Reset"
-        >
-          <RotateCcw size={16} strokeWidth={2.5} />
-        </button>
-      </div>
+      <div className="absolute bottom-2 right-2 z-10">{controls}</div>
     </div>
   );
 }
@@ -514,6 +575,9 @@ function Home() {
   const count = config.counters.length;
   const cols = Math.ceil(Math.sqrt(count));
   const rows = Math.ceil(count / cols);
+  // The settings cog floats over the top-right cell; that cell reserves room
+  // for it so its controls/label never sit underneath.
+  const topRightIndex = Math.min(cols - 1, count - 1);
 
   return (
     <div className="h-[100dvh] w-full bg-background relative">
@@ -524,8 +588,13 @@ function Home() {
           gridTemplateRows: `repeat(${rows}, minmax(0, 1fr))`,
         }}
       >
-        {config.counters.map((c) => (
-          <Counter key={c.id} config={c} numberHeight={config.numberHeight} />
+        {config.counters.map((c, i) => (
+          <Counter
+            key={c.id}
+            config={c}
+            numberHeight={config.numberHeight}
+            reserveCog={i === topRightIndex}
+          />
         ))}
       </div>
 
